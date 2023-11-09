@@ -1,24 +1,64 @@
-import  { useEffect, useState } from "react";
-// import { Button, TextField } from "@material-ui/core";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
+import * as z from "zod";
 import { useForm } from "react-hook-form";
-
 
 interface ContactData {
   name: string;
   username: string;
   email: string;
   address: string;
-  phoneNumber: string;
+  phoneNumber: number;
 }
 
-function ContactForm() {
-  const { register, handleSubmit, errors } = useForm<ContactData>();
-  const [tableData, setTableData] = useState<ContactData[]>([]);
+const formSchema = z.object({
+  name: z.string(),
+  username: z.string().min(2, {
+    message: "Username must be at least 2 characters.",
+  }),
+  email: z.string().email({
+    message: "Invalid email address.",
+  }),
+  address: z.string(),
+  phoneNumber: z.preprocess(
+    (a) => parseInt(z.string().parse(a), 10),
+    z.number().gte(18, "Must be 18 and above")
+  ),
+});
 
+function ContactForm() {
+  const {
+    register,
+    handleSubmit,
+    formState: { isSubmitting },
+    reset,
+  } = useForm<ContactData>();
+  const [tableData, setTableData] = useState<ContactData[]>([]);
   useEffect(() => {
     fetchData();
   }, []);
+
+  const form = useForm<ContactData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      username: "",
+      email: "",
+      phoneNumber: undefined,
+      address: "",
+    },
+  });
 
   const fetchData = () => {
     axios
@@ -30,7 +70,7 @@ function ContactForm() {
   };
 
   const submitFormToGoogle = (data: ContactData) => {
-    console.log("You submitted the form");
+    console.log("You submitted the form", data);
     axios
       .post(
         "https://sheet.best/api/sheets/75e1d79f-6038-4590-85d9-ebbd257edc14",
@@ -42,13 +82,15 @@ function ContactForm() {
         console.log(response);
       })
       .catch((error) => alert(error.message));
+
+    reset();
   };
 
   return (
-    <div className="contactForm">
-      <h2>Contact Information</h2>
+    <div>
+      <h1>Contact Information</h1>
       <table>
-        <thead>
+        {/* <thead>
           <tr>
             <th>Name</th>
             <th>Username</th>
@@ -56,60 +98,104 @@ function ContactForm() {
             <th>Address</th>
             <th>Phone Number</th>
           </tr>
-        </thead>
+        </thead> */}
         <tbody>
-          {tableData.map(({ name, username, email, address, phoneNumber }, index) => (
-            <tr key={index}>
-              <td>{name}</td>
-              <td>{username}</td>
-              <td>{email}</td>
-              <td>{address}</td>
-              <td>{phoneNumber}</td>
-            </tr>
-          ))}
+          {tableData.map(
+            ({ name, username, email, address, phoneNumber }, index) => (
+              <tr key={index}>
+                <td>{name}</td>
+                <td>{username}</td>
+                <td>{email}</td>
+                <td>{address}</td>
+                <td>{phoneNumber}</td>
+              </tr>
+            )
+          )}
         </tbody>
       </table>
 
-      <form onSubmit={handleSubmit(submitFormToGoogle)}>
-        <TextField
-          name="name"
-          label="Name"
-          inputRef={register({ required: true })}
-          error={errors.name ? true : false}
-          helperText={errors.name && "The Name is Required"}
-        />
-        <TextField
-          name="username"
-          label="Username"
-          inputRef={register({ required: true })}
-          error={errors.username ? true : false}
-          helperText={errors.username && "The Username is Required"}
-        />
-        <TextField
-          name="email"
-          label="Email"
-          inputRef={register({ required: true })}
-          error={errors.email ? true : false}
-          helperText={errors.email && "The Email is Required"}
-        />
-        <TextField
-          name="address"
-          label="Address"
-          inputRef={register({ required: true })}
-          error={errors.address ? true : false}
-          helperText={errors.address && "The Address is Required"}
-        />
-        <TextField
-          name="phoneNumber"
-          label="Phone Number"
-          inputRef={register({ required: true })}
-          error={errors.phoneNumber ? true : false}
-          helperText={errors.phoneNumber && "The Phone Number is Required"}
-        />
-        <Button variant="outlined" type="submit">
-          Submit
-        </Button>
-      </form>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(submitFormToGoogle)}
+          className="space-y-8"
+        >
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="James" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input placeholder="bruceLee" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="john@example.com"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Address</FormLabel>
+                <FormControl>
+                  <Input placeholder="123 Main St, City" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="phoneNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone Number</FormLabel>
+                <FormControl>
+                  <Input type="tel" placeholder="123-456-7890" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" className="w-full" style={{ marginTop: 10 }}>
+            Submit
+          </Button>
+        </form>
+      </Form>
     </div>
   );
 }
