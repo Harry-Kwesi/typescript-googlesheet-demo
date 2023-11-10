@@ -19,7 +19,7 @@ interface ContactData {
   username: string;
   email: string;
   address: string;
-  phoneNumber: number;
+  phoneNumber: string;
 }
 
 const formSchema = z.object({
@@ -38,12 +38,6 @@ const formSchema = z.object({
 });
 
 function ContactForm() {
-  const {
-    register,
-    handleSubmit,
-    formState: { isSubmitting },
-    reset,
-  } = useForm<ContactData>();
   const [tableData, setTableData] = useState<ContactData[]>([]);
   useEffect(() => {
     fetchData();
@@ -55,14 +49,14 @@ function ContactForm() {
       name: "",
       username: "",
       email: "",
-      phoneNumber: undefined,
+      phoneNumber:  "",
       address: "",
     },
   });
 
   const fetchData = () => {
     axios
-      .get("https://sheet.best/api/sheets/75e1d79f-6038-4590-85d9-ebbd257edc14")
+      .get("https://sheet.best/api/sheets/856a9c9b-ab23-4008-bf3b-4e33f842e2f6")
       .then((response) => {
         console.log("google sheets data >>> ", response);
         setTableData(response.data);
@@ -73,7 +67,7 @@ function ContactForm() {
     console.log("You submitted the form", data);
     axios
       .post(
-        "https://sheet.best/api/sheets/75e1d79f-6038-4590-85d9-ebbd257edc14",
+        "https://sheet.best/api/sheets/856a9c9b-ab23-4008-bf3b-4e33f842e2f6",
         data
       )
       .then((response) => {
@@ -83,7 +77,7 @@ function ContactForm() {
       })
       .catch((error) => alert(error.message));
 
-    reset();
+    form.reset();
   };
 
   return (
@@ -120,7 +114,7 @@ function ContactForm() {
         >
           <FormField
             control={form.control}
-            name="username"
+            name="name"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Name</FormLabel>
