@@ -88,7 +88,6 @@ function ContactForm() {
 
   return (
     <div>
-      <h1>Contact Information</h1>
       <table>
         {/* <thead>
           <tr>
@@ -191,7 +190,7 @@ function ContactForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full" style={{ marginTop: 10 }}>
+          <Button type="submit" className="w-full font-raleway" style={{ marginTop: 10 }}>
             Submit
           </Button>
         </form>
